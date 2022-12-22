@@ -10,5 +10,8 @@ namespace SaveBlueprintRequirements
     {
         public string Name { get; set; }
         public List<BlueprintResource> Resources { get; set; } = new List<BlueprintResource>();
+        public List<BlueprintResource> AllNeededResources { get; set; } = new List<BlueprintResource>();
+
+        public bool IsLastStage { get; set; }
     }
 }
