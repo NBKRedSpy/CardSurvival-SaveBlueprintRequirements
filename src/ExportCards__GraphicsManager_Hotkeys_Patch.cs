@@ -163,6 +163,9 @@ namespace SaveBlueprintRequirements
                 saveData.Add(environment);
             }
 
+            //Remove empty environments
+            saveData = saveData.Where(x=> x.Blueprints.Count >0).ToList();
+
             return saveData;
         }
 
