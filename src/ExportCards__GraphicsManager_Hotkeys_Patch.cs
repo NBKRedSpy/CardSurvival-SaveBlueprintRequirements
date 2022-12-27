@@ -4,17 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using j = System.Text.Json;
 using System.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
-using System.Text.Json;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Runtime.Remoting.Contexts;
+using LitJson;
 
 namespace SaveBlueprintRequirements
 {
@@ -59,8 +57,14 @@ namespace SaveBlueprintRequirements
 
 
             //--Write out Json
-            string json = JsonSerializer.Serialize(saveData, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(JsonFilePath, json);
+
+            StringBuilder sb = new StringBuilder();
+            LitJson.JsonWriter writer = new JsonWriter(sb);
+
+            writer.PrettyPrint = true;
+
+            LitJson.JsonMapper.ToJson(saveData, writer);
+            File.WriteAllText(JsonFilePath, sb.ToString());
 
             //--Write out text version
             File.WriteAllText(TextFilePath, GetFormattedText(saveData, inlineResourcesText));
@@ -141,7 +145,7 @@ namespace SaveBlueprintRequirements
             if (File.Exists(jsonFilePath))
             {
 
-                saveData = JsonSerializer.Deserialize<List<Environment>>(File.ReadAllText(jsonFilePath));
+                saveData = JsonMapper.ToObject<List<Environment>>(File.ReadAllText(jsonFilePath));
 
                 Environment existingEnvironment = saveData.SingleOrDefault(x => x.Name == environment.Name);
 
