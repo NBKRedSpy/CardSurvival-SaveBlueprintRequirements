@@ -29,9 +29,9 @@ namespace SaveBlueprintRequirements
             Log = Logger;
 
             
-            InlineFormat = Config.Bind("General", nameof(InlineFormat), true, "If true, will put all needed resources in a single line.");
+            InlineFormat = Config.Bind("General", nameof(InlineFormat), false , "If true, will put all needed resources in a single line.");
             FileBaseName = Config.Bind("General", nameof(FileBaseName), "Blueprints", "The name of the exported files, minus the extension");
-            Hotkey = Config.Bind("General", nameof(Hotkey), KeyCode.Mouse3, "The hotkey used to write the blueprint info on demand");
+            Hotkey = Config.Bind("General", nameof(Hotkey), KeyCode.PageUp, "The hotkey used to write the blueprint info on demand");
 
             Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
             harmony.PatchAll();
