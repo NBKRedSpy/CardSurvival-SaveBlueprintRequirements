@@ -1,6 +1,6 @@
 # Save Blueprint Requirements
 
-A rough mod to save the requirements for blueprints that are currently being built.
+A rough mod to output the requirements for all blueprints that are currently being built.
 It can be used to keep track of all the blueprints in all of the environments and what resources they require.
 
 The mod saves the output to two files:
