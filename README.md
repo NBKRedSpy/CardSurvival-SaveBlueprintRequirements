@@ -91,6 +91,7 @@ The following settings are in the configuration file.  See [Changing the Configu
 |Hotkey|PageUp|The hotkey used to write the blueprint info on demand.|
 |InlineFormat|false|If true, will put all needed resources in a single line.|
 |FileBaseName|Blueprints|The name of the exported files, minus the extension.|
+|ShowBuildTime|true|If true, will include the time remaining for the current stage and all remaining work.|
 
 # Changing the Configuration
 All options are contained in the config file which is located at ```<Steam Directory>\steamapps\common\Card Survival Tropical Island\BepInEx\config\SaveBlueprintRequirements.cfg```.
