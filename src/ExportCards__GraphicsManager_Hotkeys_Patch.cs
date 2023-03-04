@@ -13,6 +13,7 @@ using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Runtime.Remoting.Contexts;
 using LitJson;
+using System.Xml.Linq;
 
 namespace SaveBlueprintRequirements
 {
@@ -176,8 +177,15 @@ namespace SaveBlueprintRequirements
         private static Environment GetCurrentEnvironment(GameManager ___GM)
         {
             //Get Blueprint info
-            var newBlueprints = ___GM.AllCards
-                .Where(x => x.IsBlueprintInstance == true)
+            //Note: Environment Improvements.
+            //  Only include improvements where the first stage has been completed and is not complete.
+            //  They are not blueprint instances, so it requires a different selection.
+            List<BlueprintCard> newBlueprints = ___GM.AllCards
+                .Where(x => x.IsBlueprintInstance ||
+                    (x.CardModel.CardType == CardTypes.EnvImprovement 
+                        && x.BlueprintComplete == false 
+                        &&  x.BlueprintData.CurrentStage > 0)
+                )
                 .Select(x =>
                 {
                     List<BlueprintResource> currentStageResources = GetResources(x.CurrentBlueprintStage.RequiredElements, x.CardsInInventory)
@@ -207,12 +215,12 @@ namespace SaveBlueprintRequirements
                         AllNeededResources = allNeededResources,
                         IsLastStage = x.BlueprintData.CurrentStage == x.BlueprintSteps -1,
                     };
-                });
+                }).ToList();
 
             Environment environment = new Environment()
             {
                 Name = ___GM.CurrentEnvironment.CardName,
-                Blueprints = newBlueprints.ToList()
+                Blueprints = newBlueprints
             };
 
             return environment;
@@ -236,7 +244,7 @@ namespace SaveBlueprintRequirements
         }
 
         /// <summary>
-        /// Converts a list of blueprint elements into card resources reuqired for a blueprint.
+        /// Converts a list of blueprint elements into card resources required for a blueprint.
         /// </summary>
         /// <param name="blueprintElements"></param>
         /// <param name="cardsInInventory">Set this value to null if the blueprint elements are not from the current step.s</param>
@@ -250,8 +258,10 @@ namespace SaveBlueprintRequirements
                     return new BlueprintResource()
                     {
                         Name = required.GetName,
-                        //The two arrays are in sync.
-                        Needed =  required.GetQuantity - (cardsInInventory != null ? cardsInInventory[index].CardAmt : 0),
+                        //The two arrays are in sync.  
+                        //  Previously the cardsInInventory was null, but later patches have it as allocated.
+                        //  checking for both just in case.
+                        Needed =  required.GetQuantity - (cardsInInventory?.Count > 0 ? cardsInInventory[index].CardAmt : 0),
                     };
                 }).ToList();
                 
