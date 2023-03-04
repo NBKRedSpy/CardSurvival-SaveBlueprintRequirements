@@ -1,13 +1,16 @@
 # Save Blueprint Requirements
 
-A rough mod to output the requirements for all blueprints that are currently being built in all locations.
+A rough mod to output the requirements for all blueprints that are currently being built in all locations.  
+Includes environment improvements that have had at least the first step completed.
 
 ## Example Output
 ```
 Eastern Grasslands: 
     Trapping Pit
+        (1:30) 
         Shovel (1)
         
+        (7:30) 
         Heavy Stone (4)
         Long Stick (6)
         Palm Fronds (12)
@@ -16,9 +19,11 @@ Eastern Grasslands:
         
 Jungle: 
     Empty Skep
+        (1:30) 
         Palm Fronds (6)
         Palm Weave (8)
         
+        (7:30) 
         Manure (2)
         Mud Pile (2)
         Palm Fronds (6)
@@ -29,8 +34,10 @@ Jungle:
 The output is as follows:
 * The Environment the blueprint is in.
 * The name of the blueprint
+* The building time of the current stage.
 * The remaining requirements for the current stage.
 * A blank line
+* The building time of all work remaining.
 * All of the requirements to complete the blueprint, including the remaining items for the current stage.
 
 ## File info
@@ -67,8 +74,9 @@ The data is only updated when leaving an environment or the user presses the upd
 ## Changing Game Saves
 If a different game is loaded or a new game is started, the .json file must be deleted.  Otherwise the output will show data from the previous game.
 
-## No Improvements
-Improvements such as hut expansions or location paths, etc. are not included.
+## Improvements 
+Improvements are only included if at least the first step has been completed.
+Otherwise, the output would contain every available improvement for all locations.
 
 ## Only Visited Locations
 For pre-existing saves, blueprints in other locations will not be included until those locations are visited.  
@@ -153,3 +161,9 @@ The rest of the environments are in a "save" format and contain keys to the card
 Note that while the current environment is in the EnvironmentsData collection, it appears to be a stale copy.  When the game is loaded, the current environment's entry in GameManager.EnvironmentsData is effectively ignored since the current environment is loaded from different data.  The save data is updated when the player leaves an environment.
 
 Source code for this mod can be found at https://github.com/NBKRedSpy/CardSurvival-SaveBlueprintRequirements/
+
+
+# Change Log
+## 1.3.0
+* Added improvements under construction to the list.
+* Added build time.

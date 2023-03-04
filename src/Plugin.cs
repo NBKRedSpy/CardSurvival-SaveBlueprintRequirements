@@ -18,6 +18,8 @@ namespace SaveBlueprintRequirements
         public static ConfigEntry<string> FileBaseName { get; private set; }
         public static ConfigEntry<KeyCode> Hotkey { get; private set; }
 
+        public static ConfigEntry<bool> ShowBuildTime { get; private set; }
+
         public static ManualLogSource Log { get; set; }
 
 
@@ -32,6 +34,7 @@ namespace SaveBlueprintRequirements
             InlineFormat = Config.Bind("General", nameof(InlineFormat), false , "If true, will put all needed resources in a single line.");
             FileBaseName = Config.Bind("General", nameof(FileBaseName), "Blueprints", "The name of the exported files, minus the extension");
             Hotkey = Config.Bind("General", nameof(Hotkey), KeyCode.PageUp, "The hotkey used to write the blueprint info on demand");
+            ShowBuildTime = Config.Bind("General", nameof(ShowBuildTime), true, "If true, will include the time remaining for the current stage and all remaining work.");
 
             Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
             harmony.PatchAll();

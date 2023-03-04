@@ -13,6 +13,8 @@ using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Runtime.Remoting.Contexts;
 using LitJson;
+using System.Xml.Linq;
+using System.Runtime.Serialization;
 
 namespace SaveBlueprintRequirements
 {
@@ -29,6 +31,9 @@ namespace SaveBlueprintRequirements
         {
             JsonFilePath = Path.Combine(Plugin.ModDirectory, $"{Plugin.FileBaseName.Value}.json");
             TextFilePath = Path.Combine(Plugin.ModDirectory, $"{Plugin.FileBaseName.Value}.txt");
+            LitJson.JsonMapper.RegisterExporter((TimeSpan time, JsonWriter writer) => writer.Write((int)time.TotalMinutes));
+            LitJson.JsonMapper.RegisterImporter((int minutes) => TimeSpan.FromMinutes(minutes));
+
 
         }
 
@@ -37,12 +42,12 @@ namespace SaveBlueprintRequirements
 
             if (Input.GetKeyDown(Hotkey))
             {
-                SaveBlueprintData(___GM, Plugin.InlineFormat.Value);
+                SaveBlueprintData(___GM, Plugin.InlineFormat.Value, Plugin.ShowBuildTime.Value);
 
             }
         }
 
-        public static void SaveBlueprintData(GameManager ___GM, bool inlineResourcesText)
+        public static void SaveBlueprintData(GameManager ___GM, bool inlineResourcesText, bool showBuildTime)
         {
             Environment environment = GetCurrentEnvironment(___GM);
 
@@ -60,21 +65,21 @@ namespace SaveBlueprintRequirements
 
             StringBuilder sb = new StringBuilder();
             LitJson.JsonWriter writer = new JsonWriter(sb);
-
             writer.PrettyPrint = true;
 
             LitJson.JsonMapper.ToJson(saveData, writer);
             File.WriteAllText(JsonFilePath, sb.ToString());
 
             //--Write out text version
-            File.WriteAllText(TextFilePath, GetFormattedText(saveData, inlineResourcesText));
+            File.WriteAllText(TextFilePath, GetFormattedText(saveData, inlineResourcesText, showBuildTime));
 
         }
 
-        private static string GetFormattedText(List<Environment> saveData, bool inline)
+        private static string GetFormattedText(List<Environment> saveData, bool inline, bool showBuildTime)
         {
             StringWriter stringWriter = new ();
             IndentedTextWriter writer = new(stringWriter);
+            const string timeFormat = @"\(h\:mm\)\ ";
 
 
             foreach (Environment environment in saveData)
@@ -87,20 +92,26 @@ namespace SaveBlueprintRequirements
                     writer.WriteLine(blueprint.Name);
                     writer.Indent++;
 
+                    if (showBuildTime)
+                    {
+                        writer.Write(blueprint.StageTimeRemaining.ToString(timeFormat));
+                        if (!inline) writer.WriteLine();
+                    }
+
                     GetResourcesFormatted(blueprint.Resources, inline, writer);
 
                     //Don't show the "All required" if this is the last step as it is the same text.
                     if(blueprint.IsLastStage == false)
                     {
-                        if (!inline)
+                        if(showBuildTime)
                         {
-                            writer.WriteLine();
+                            if (!inline) writer.WriteLine();
+                            writer.Write(blueprint.TotalTimeRemaining.ToString(timeFormat));
                         }
 
+                        if (!inline) writer.WriteLine();
                         GetResourcesFormatted(blueprint.AllNeededResources, inline, writer);
-                        
                     }
-                    
 
                     writer.WriteLine();
                     writer.Indent--;
@@ -176,8 +187,15 @@ namespace SaveBlueprintRequirements
         private static Environment GetCurrentEnvironment(GameManager ___GM)
         {
             //Get Blueprint info
-            var newBlueprints = ___GM.AllCards
-                .Where(x => x.IsBlueprintInstance == true)
+            //Note: Environment Improvements.
+            //  Only include improvements where the first stage has been completed and is not complete.
+            //  They are not blueprint instances, so it requires a different selection.
+            List<BlueprintCard> newBlueprints = ___GM.AllCards
+                .Where(x => x.IsBlueprintInstance ||
+                    (x.CardModel.CardType == CardTypes.EnvImprovement 
+                        && x.BlueprintComplete == false 
+                        &&  x.BlueprintData.CurrentStage > 0)
+                )
                 .Select(x =>
                 {
                     List<BlueprintResource> currentStageResources = GetResources(x.CurrentBlueprintStage.RequiredElements, x.CardsInInventory)
@@ -200,19 +218,23 @@ namespace SaveBlueprintRequirements
                                 .OrderBy(x => x.Name)
                                 .ToList();
 
+                    int buildTimeMinutes = x.CardModel.BuildingDaytimeCost * 15;
+
                     return new BlueprintCard()
                     {
                         Name = x.CardName(),
                         Resources = currentStageResources,
                         AllNeededResources = allNeededResources,
-                        IsLastStage = x.BlueprintData.CurrentStage == x.BlueprintSteps -1,
+                        IsLastStage = x.BlueprintData.CurrentStage == x.BlueprintSteps - 1,
+                        StageTimeRemaining = TimeSpan.FromMinutes(buildTimeMinutes),
+                        TotalTimeRemaining = TimeSpan.FromMinutes((x.BlueprintSteps - x.BlueprintData.CurrentStage) * buildTimeMinutes)
                     };
-                });
+                }).ToList();
 
             Environment environment = new Environment()
             {
                 Name = ___GM.CurrentEnvironment.CardName,
-                Blueprints = newBlueprints.ToList()
+                Blueprints = newBlueprints
             };
 
             return environment;
@@ -236,7 +258,7 @@ namespace SaveBlueprintRequirements
         }
 
         /// <summary>
-        /// Converts a list of blueprint elements into card resources reuqired for a blueprint.
+        /// Converts a list of blueprint elements into card resources required for a blueprint.
         /// </summary>
         /// <param name="blueprintElements"></param>
         /// <param name="cardsInInventory">Set this value to null if the blueprint elements are not from the current step.s</param>
@@ -250,8 +272,10 @@ namespace SaveBlueprintRequirements
                     return new BlueprintResource()
                     {
                         Name = required.GetName,
-                        //The two arrays are in sync.
-                        Needed =  required.GetQuantity - (cardsInInventory != null ? cardsInInventory[index].CardAmt : 0),
+                        //The two arrays are in sync.  
+                        //  Previously the cardsInInventory was null, but later patches have it as allocated.
+                        //  checking for both just in case.
+                        Needed =  required.GetQuantity - (cardsInInventory?.Count > 0 ? cardsInInventory[index].CardAmt : 0),
                     };
                 }).ToList();
                 
@@ -266,7 +290,7 @@ namespace SaveBlueprintRequirements
     {
         public static void Prefix(GameManager __instance)
         {
-            ExportCards__GraphicsManager_Hotkeys_Patch.SaveBlueprintData(__instance, Plugin.InlineFormat.Value);
+            ExportCards__GraphicsManager_Hotkeys_Patch.SaveBlueprintData(__instance, Plugin.InlineFormat.Value, Plugin.ShowBuildTime.Value);
         }
     }
 }
