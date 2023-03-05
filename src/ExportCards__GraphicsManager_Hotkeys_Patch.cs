@@ -79,8 +79,6 @@ namespace SaveBlueprintRequirements
         {
             StringWriter stringWriter = new ();
             IndentedTextWriter writer = new(stringWriter);
-            const string timeFormat = @"\(h\:mm\)\ ";
-
 
             foreach (Environment environment in saveData)
             {
@@ -94,7 +92,7 @@ namespace SaveBlueprintRequirements
 
                     if (showBuildTime)
                     {
-                        writer.Write(blueprint.StageTimeRemaining.ToString(timeFormat));
+                        writer.Write(FormattedTime(blueprint.StageTimeRemaining));
                         if (!inline) writer.WriteLine();
                     }
 
@@ -106,7 +104,7 @@ namespace SaveBlueprintRequirements
                         if(showBuildTime)
                         {
                             if (!inline) writer.WriteLine();
-                            writer.Write(blueprint.TotalTimeRemaining.ToString(timeFormat));
+                            writer.Write(FormattedTime(blueprint.TotalTimeRemaining));
                         }
 
                         if (!inline) writer.WriteLine();
@@ -123,6 +121,13 @@ namespace SaveBlueprintRequirements
             return stringWriter.ToString();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Method Declaration", "Harmony003:Harmony non-ref patch parameters modified", Justification = "<Pending>")]
+        private static string FormattedTime(TimeSpan time)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            return $"({(time.Days * 24) + time.Hours}:{time.Minutes:00}) ";
+        }
         private static void GetResourcesFormatted(List<BlueprintResource> resources, bool inline, IndentedTextWriter writer)
         {
             StringBuilder sb = new StringBuilder();
