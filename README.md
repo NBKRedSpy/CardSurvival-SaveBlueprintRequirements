@@ -92,6 +92,7 @@ The following settings are in the configuration file.  See [Changing the Configu
 |InlineFormat|false|If true, will put all needed resources in a single line.|
 |FileBaseName|Blueprints|The name of the exported files, minus the extension.|
 |ShowBuildTime|true|If true, will include the time remaining for the current stage and all remaining work.|
+|SortByName|true|If true, will sort the blueprints by name.  Otherwise, it will be the order of the items on the screen.|
 
 # Changing the Configuration
 All options are contained in the config file which is located at ```<Steam Directory>\steamapps\common\Card Survival Tropical Island\BepInEx\config\SaveBlueprintRequirements.cfg```.
@@ -165,6 +166,10 @@ Source code for this mod can be found at https://github.com/NBKRedSpy/CardSurviv
 
 
 # Change Log
+
+## 1.4.0
+Added SortByName option.
+
 ## 1.3.0
 * Added improvements under construction to the list.
 * Added build time.

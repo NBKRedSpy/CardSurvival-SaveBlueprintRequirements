@@ -201,6 +201,8 @@ namespace SaveBlueprintRequirements
                         && x.BlueprintComplete == false 
                         &&  x.BlueprintData.CurrentStage > 0)
                 )
+                //Optional sort
+                .OrderBy(x=>  Plugin.SortByName.Value ? x.CardName() : "")
                 .Select(x =>
                 {
                     List<BlueprintResource> currentStageResources = GetResources(x.CurrentBlueprintStage.RequiredElements, x.CardsInInventory)

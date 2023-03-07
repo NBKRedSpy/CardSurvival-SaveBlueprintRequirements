@@ -20,6 +20,8 @@ namespace SaveBlueprintRequirements
 
         public static ConfigEntry<bool> ShowBuildTime { get; private set; }
 
+        public static ConfigEntry<bool> SortByName{ get; private set; }
+
         public static ManualLogSource Log { get; set; }
 
 
@@ -35,6 +37,7 @@ namespace SaveBlueprintRequirements
             FileBaseName = Config.Bind("General", nameof(FileBaseName), "Blueprints", "The name of the exported files, minus the extension");
             Hotkey = Config.Bind("General", nameof(Hotkey), KeyCode.PageUp, "The hotkey used to write the blueprint info on demand");
             ShowBuildTime = Config.Bind("General", nameof(ShowBuildTime), true, "If true, will include the time remaining for the current stage and all remaining work.");
+            SortByName = Config.Bind("General", nameof(SortByName), true, "If true, will sort the blueprints by name.  Otherwise, it will be the order of the items on the screen.");
 
             Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
             harmony.PatchAll();
