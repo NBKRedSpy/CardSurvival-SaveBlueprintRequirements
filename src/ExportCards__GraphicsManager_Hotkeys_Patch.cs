@@ -193,13 +193,15 @@ namespace SaveBlueprintRequirements
         {
             //Get Blueprint info
             //Note: Environment Improvements.
-            //  Only include improvements where the first stage has been completed and is not complete.
+            //  Only include improvements where it is not complete, and either is beyond the first step or at least one item
+            //      has been put in the requirements.
             //  They are not blueprint instances, so it requires a different selection.
             List<BlueprintCard> newBlueprints = ___GM.AllCards
                 .Where(x => x.IsBlueprintInstance ||
                     (x.CardModel.CardType == CardTypes.EnvImprovement 
-                        && x.BlueprintComplete == false 
-                        &&  x.BlueprintData.CurrentStage > 0)
+                        && x.BlueprintComplete == false
+                        && (x.BlueprintData.CurrentStage > 0
+                            || x.CardsInInventory.Any(inventory => inventory.AllCards.Count > 0)))
                 )
                 //Optional sort
                 .OrderBy(x=>  Plugin.SortByName.Value ? x.CardName() : "")

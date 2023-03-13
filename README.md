@@ -75,7 +75,7 @@ The data is only updated when leaving an environment or the user presses the upd
 If a different game is loaded or a new game is started, the .json file must be deleted.  Otherwise the output will show data from the previous game.
 
 ## Improvements 
-Improvements are only included if at least the first step has been completed.
+Improvements are only included if there is at least one item filled in the blueprint or the blueprint is beyond the first step.
 Otherwise, the output would contain every available improvement for all locations.
 
 ## Only Visited Locations
@@ -166,9 +166,10 @@ Source code for this mod can be found at https://github.com/NBKRedSpy/CardSurviv
 
 
 # Change Log
-
+## 1.5.0
+* Changed improvements to be included if there is an item placed in the blueprint.
 ## 1.4.0
-Added SortByName option.
+* Added SortByName option.
 
 ## 1.3.0
 * Added improvements under construction to the list.
